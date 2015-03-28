@@ -6,7 +6,9 @@ Garrett R. Davis
 
 ### Install
 1) Place files inside “www.webapplight.dev” inside root of your project.
+
 2) Add your database credentials. /_app/config/database.php
+
 3) Import install_sql.sql into your database.
 
 
