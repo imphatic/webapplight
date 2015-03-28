@@ -1,0 +1,56 @@
+#php_value error_reporting 1
+
+# sets the max age to 480 weeks so that the site caches on user browsers for maxium time.
+#<FilesMatch "\.(ico|pdf|flv|jpg|jpeg|png|gif|js|css|swf)$">
+#Header set Cache-Control "max-age=290304000, public"
+#</FilesMatch>
+
+# START GZIP COMPRESSION
+#<IfModule mod_deflate.c>
+  # Insert filter
+  #SetOutputFilter DEFLATE
+
+  # Don't compress images
+  #SetEnvIfNoCase Request_URI \.(?:gif|jpe?g|png)$ no-gzip dont-vary
+
+  # Make sure proxies don't deliver the wrong content
+  #Header append Vary User-Agent env=!dont-vary
+#</IfModule>
+#END GZIP COMPRESSION
+
+<IfModule mod_rewrite.c>
+    Options -MultiViews +FollowSymlinks
+    RewriteEngine On
+    RewriteBase /
+
+    #Block access to hidden directors such as .git
+    RewriteRule "(^|/)\." - [F]
+
+    #301 force the www. version of this site.
+    RewriteCond %{HTTP_HOST} !^$
+    RewriteCond %{HTTP_HOST} !^www\. [NC]
+    RewriteCond %{HTTPS}s ^on(s)|
+    RewriteRule ^ http%1://www.%{HTTP_HOST}%{REQUEST_URI} [R=301,L]
+
+    #301 force remove index pages
+    RewriteCond %{REQUEST_URI} !_app/.*$
+    RewriteRule ^(.*)(/|)index\.php$ /$1 [L,R=301]
+
+    #301 force remove the .php extension
+    RewriteCond %{REQUEST_URI} !_app/.*$
+    RewriteRule ^(.*)\.php$ /$1 [L,R=301]
+
+    #301 force the trailing slash
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteCond %{REQUEST_URI} !/sitemap\.xml$
+    RewriteCond %{REQUEST_URI} !.*\.([a-zA-Z]{2,4})$
+    RewriteRule ^(.*)([^/])$ http://%{HTTP_HOST}/$1$2/ [L,R=301]
+
+    #Send all requests to the file below.
+    RewriteCond %{REQUEST_URI} (.*)$
+    RewriteCond %{REQUEST_URI} !\.[a-z]{2,4}|\.php$ [OR]
+    RewriteCond %{REQUEST_URI} \.php$ [OR]
+    RewriteCond %{REQUEST_URI} /sitemap\.xml$
+    RewriteRule (.*)  _app/core/initialize.php [L]
+</IfModule>
